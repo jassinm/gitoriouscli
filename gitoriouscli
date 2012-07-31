@@ -41,8 +41,18 @@ class GitoriousClient(object):
                 'commit':'Create project'}
 
         r = self.session.post('%s/projects' % self.hosturi, verify=False, data=data)
+        if not r.ok:
+            print 'counld no create project %s' % self.projectname
+            return
+
+        data = {'repository[name]': self.projectname,
+                'repository[description]' : '',
+                'repository[merge_requests_enabled]': 1,
+                'commit': 'Create repository'}
+
+        r = self.session.post('%s/%s/repositories' % (self.hosturi, self.projectname), verify=False, data=data)
         if r.ok:
-            print 'created project %s' % self.projectname
+            print 'project %s created successfully' % self.projectname
         else:
             print 'counld no create project %s' % self.projectname
 
