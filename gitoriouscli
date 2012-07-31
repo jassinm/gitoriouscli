@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+import requests
+from BeautifulSoup import BeautifulSoup
+
+#config.action_controller.allow_forgery_protection = false
+#in environment.rb /var/www/gitorious/config
+
+class GitoriousClient(object):
+
+    def __init__(self, **args):
+        self.hosturi = args['hosturi']
+        self.projectname = args['projectname']
+        self.projectdescription = args.get('projectdescription', 'no description yet')
+        self.auth=(args['user'],args['pwd'])
+        self.session = requests.session(auth=self.auth)
+        # r = self.session.post('%s/sessions' % self.hosturi,verify=False)
+
+    def get_authtoken(self):
+        r = session.get('%s/new' % self.hosturi, verify=False)
+        soup = BeautifulSoup(r.content)
+        inputauth = soup.find('input', attrs={'name':'authenticity_token'})
+        authenticity_token=dict(inputauth.attrs)['value']
+        return authenticity_token
+
+    def create_project(self):
+        data = {
+                #'authenticity_token': authenticity_token,
+                'project[title]': self.projectname,
+                'project[slug]': self.projectname,
+                'project[owner_type]': 'User',
+                'project[owner_id]': '',
+                'project[tag_list]': '',
+                'project[license]':'Academic Free License v3.0',
+                'project[home_url]':'',
+                'project[mailinglist_url]':'',
+                'project[bugtracker_url]':'',
+                'project[wiki_enabled]':1,
+                'project[description]': self.projectdescription,
+                'commit':'Create project'}
+
+        r = self.session.post('%s/projects' % self.hosturi, verify=False, data=data)
+        if r.ok:
+            print 'created project %s' % self.projectname
+        else:
+            print 'counld no create project %s' % self.projectname
+
+
+    def delete_project(self):
+
+        data = {"_method": "delete",
+                "commit": "YES I am sure I want to delete this project permanently"}
+        r = self.session.post('%s/%s' %(self.hosturi, self.projectname), verify=False, data=data)
+        if r.ok:
+            print 'deleted project %s' % self.projectname
+        else:
+            print 'Could not delete project %s'  % self.projectname
+
+
+
+def run(options):
+    g = GitoriousClient(**options)
+    if options["delete"]:
+        g.delete_project()
+    else:
+        g.create_project()
+
+
+def main():
+    from optparse import OptionParser
+
+    usage = 'usage: %prog [options] user -h for help'
+    parser = OptionParser(usage)
+    parser.add_option('-f', '--host', action='store',
+    type='string', dest='hosturi', help='gitorious host')
+    parser.add_option('-u', '--user', action='store',
+    type='string', dest='user', help='user name')
+    parser.add_option('-p', '--pwd', action='store',
+    type='string', dest='pwd', help='password')
+    parser.add_option('-i', '--project', action='store',
+    type='string', dest='projectname', help='projectname')
+    parser.add_option('-d', '--delete', action='store_true',
+    dest='delete', help='delete project', default=False)
+
+    (options, args) = parser.parse_args()
+    #remove None value's
+    voptions = vars(options)
+    voptions = dict([(k, v) for k, v in voptions.iteritems() if v is not None])
+
+    if set(['hosturi', 'user', 'pwd', 'projectname']) - set(voptions.keys()):
+        parser.print_help()
+    else:
+        run(voptions)
+
+if __name__ == '__main__':
+    main()
