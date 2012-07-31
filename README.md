@@ -19,11 +19,23 @@ Usage
 -----
 
 
-* create project:
+* create project :
 
-    gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project testproject
+    gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project <projectname>
+
+This will add to project <projectname> a repository <projectname>
+
+* create project with different reponame
+
+    gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project <projectname> --repo <reponame>
 
 * delete project
 
     gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project testproject --delete
+
+* delete repo at project:
+    Todo
+
+* list projects
+    Todo
 

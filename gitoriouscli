@@ -11,11 +11,8 @@ class GitoriousClient(object):
 
     def __init__(self, **args):
         self.hosturi = args['hosturi']
-        self.projectname = args['projectname']
-        self.projectdescription = args.get('projectdescription', 'no description yet')
         self.auth=(args['user'],args['pwd'])
         self.session = requests.session(auth=self.auth)
-        # r = self.session.post('%s/sessions' % self.hosturi,verify=False)
 
     def get_authtoken(self):
         r = session.get('%s/new' % self.hosturi, verify=False)
@@ -24,11 +21,11 @@ class GitoriousClient(object):
         authenticity_token=dict(inputauth.attrs)['value']
         return authenticity_token
 
-    def create_project(self):
+    def create_project(self, projectname):
         data = {
                 #'authenticity_token': authenticity_token,
-                'project[title]': self.projectname,
-                'project[slug]': self.projectname,
+                'project[title]': projectname,
+                'project[slug]': projectname,
                 'project[owner_type]': 'User',
                 'project[owner_id]': '',
                 'project[tag_list]': '',
@@ -37,44 +34,54 @@ class GitoriousClient(object):
                 'project[mailinglist_url]':'',
                 'project[bugtracker_url]':'',
                 'project[wiki_enabled]':1,
-                'project[description]': self.projectdescription,
+                'project[description]': 'no description yet',
                 'commit':'Create project'}
 
         r = self.session.post('%s/projects' % self.hosturi, verify=False, data=data)
         if not r.ok:
-            print 'counld no create project %s' % self.projectname
-            return
+            raise Exception('counld no create project %s' % projectname)
 
-        data = {'repository[name]': self.projectname,
+    def create_repo(self, projectname, repositoryname):
+        data = {'repository[name]': repositoryname,
                 'repository[description]' : '',
                 'repository[merge_requests_enabled]': 1,
                 'commit': 'Create repository'}
 
-        r = self.session.post('%s/%s/repositories' % (self.hosturi, self.projectname), verify=False, data=data)
+        r = self.session.post('%s/%s/repositories' % (self.hosturi, projectname), verify=False, data=data)
         if r.ok:
-            print 'project %s created successfully' % self.projectname
+            print 'project %s @ repo %s created successfully' % (projectname , repositoryname)
         else:
-            print 'counld no create project %s' % self.projectname
+            print 'counld no create project %s @ repo %s' % (projectname, repositoryname)
 
 
-    def delete_project(self):
+    def delete_project(self, projectname):
 
         data = {"_method": "delete",
                 "commit": "YES I am sure I want to delete this project permanently"}
-        r = self.session.post('%s/%s' %(self.hosturi, self.projectname), verify=False, data=data)
+        r = self.session.post('%s/%s' %(self.hosturi, projectname), verify=False, data=data)
         if r.ok:
-            print 'deleted project %s' % self.projectname
+            print 'deleted project %s' % projectname
         else:
-            print 'Could not delete project %s'  % self.projectname
+            print 'Could not delete project %s'  % projectname
+
+    def delete_repo(self, projectname, repostioryname):
+        pass
 
 
 
 def run(options):
+
+    projectname = options['projectname']
     g = GitoriousClient(**options)
-    if options["delete"]:
-        g.delete_project()
+
+    if options["delete"] and "repositoryname" in options:
+        g.delete_project(projectname, options["repostioryname"])
+    elif options["delete"]:
+        g.delete_project(projectname)
     else:
-        g.create_project()
+        repositoryname = options.get('repositoryname', 'projectname')
+        g.create_project(projectname)
+        g.create_repo(projectname, repositoryname)
 
 
 def main():
@@ -90,6 +97,8 @@ def main():
     type='string', dest='pwd', help='password')
     parser.add_option('-i', '--project', action='store',
     type='string', dest='projectname', help='projectname')
+    parser.add_option('-r', '--repo', action='store',
+    type='string', dest='repositoryname', help='projectname')
     parser.add_option('-d', '--delete', action='store_true',
     dest='delete', help='delete project', default=False)
 
