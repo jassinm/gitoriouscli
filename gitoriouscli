@@ -64,8 +64,14 @@ class GitoriousClient(object):
         else:
             print 'Could not delete project %s'  % projectname
 
-    def delete_repo(self, projectname, repostioryname):
-        pass
+    def delete_repo(self, projectname, repositoryname):
+        data = {"_method": "delete",
+                "commit": "YES I am sure I want to delete this repository permanently"}
+        r = self.session.post('%s/%s/%s' %(self.hosturi, projectname, repositoryname), verify=False, data=data)
+        if r.ok:
+            print 'deleted project %s @ repo %s' % (projectname, repositoryname)
+        else:
+            print 'Could not delete project %s @ repo %s'  % (projectname, repositoryname)
 
 
 
@@ -75,7 +81,7 @@ def run(options):
     g = GitoriousClient(**options)
 
     if options["delete"] and "repositoryname" in options:
-        g.delete_project(projectname, options["repostioryname"])
+        g.delete_repo(projectname, options["repositoryname"])
     elif options["delete"]:
         g.delete_project(projectname)
     else:

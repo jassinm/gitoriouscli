@@ -31,10 +31,10 @@ This will add to project <projectname> a repository <projectname>
 
 * delete project
 
-    gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project testproject --delete
+    gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project <projectname> --delete
 
 * delete repo at project:
-    Todo
+    gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project <projectname> --repo <reponame> --delete
 
 * list projects
     Todo
