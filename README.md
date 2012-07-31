@@ -6,7 +6,7 @@ Simple gitorious cli to create/delete a project on your local server
 Install
 -------
 
-    pip install https://github.com/locojay/gitoriouscli.git
+    pip install git+https://github.com/locojay/gitoriouscli.git
 
 add the following line to environment.rb in /var/www/gitorious/config:
 
@@ -18,13 +18,12 @@ produces an internal server error
 Usage
 -----
 
-data)
 
-*create project:
+* create project:
 
     gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project testproject
 
-*delete project
+* delete project
 
     gitoriouscli --host https://locojaydev --user locojaydev@gmail.com --pwd **** --project testproject --delete
 
